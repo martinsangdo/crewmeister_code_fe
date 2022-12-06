@@ -10,6 +10,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {ACTION_TYPE, DEFAULT_PAGE_LEN, APIS} from '../constant';
 import TotalComponent from './total'
 import { Pagination } from './pagination';
+import DateRangePicker from '@wojtekmaj/react-daterange-picker';    //https://github.com/wojtekmaj/react-daterange-picker
 
 //display list of absences
 function Absences() {
@@ -32,6 +33,11 @@ function Absences() {
     };
     //
     const [selectingType, setSelectingType] = useState('');
+    //date picker config
+    const [dateRange, setDateRange] = useState([new Date(), new Date()]);
+    const [startDate, setStartDate] = useState(''); //yyyy-mm-dd
+    const [endDate, setEndDate] = useState(''); //yyyy-mm-dd
+
     //
     const dispatch = useDispatch(); //link with redux
     //
@@ -45,6 +51,12 @@ function Absences() {
             var uri = apiAddress + APIS.GET_ABSENCES + '?page_limit='+DEFAULT_PAGE_LEN+'&page_index='+(page-1);
             if (selectingType != null && selectingType != ''){
                 uri += '&type=' + selectingType;
+            }
+            if (startDate != ''){
+                uri += '&start_date=' + startDate;
+            }
+            if (endDate != ''){
+                uri += '&end_date=' + endDate;
             }
             fetch(uri)
                 .then(res => res.json())
@@ -112,8 +124,16 @@ function Absences() {
         setSelectingType(newType);
     }
     //when user click Search
+    function handleSelectDateRange(e: any){
+        var startTime = new Date(e[0]);
+        setStartDate(startTime.getFullYear()+'-'+(startTime.getMonth()+1) + '-' + startTime.getDate());
+        var endTime = new Date(e[1]);
+        setEndDate(endTime.getFullYear()+'-'+(endTime.getMonth()+1) + '-' + endTime.getDate());
+        setDateRange(e);
+    }
+    //when user click Search
     function handleClickSearch(){
-
+        fetchAbsences();
     }
     //render
         return <Container>
@@ -122,13 +142,12 @@ function Absences() {
                 <Form className="m-2">
                     <Row className="mb-2">
                         <Form.Group as={Col} controlId="formGridCity">
-                            <Form.Label>Start date</Form.Label>
-                            <Form.Control/>
-                        </Form.Group>
-
-                        <Form.Group as={Col} controlId="formGridCity">
-                            <Form.Label>End date</Form.Label>
-                            <Form.Control/>
+                            <Form.Label>Date range (start date of Absence): </Form.Label>
+                            <div>
+                                <DateRangePicker
+                                    format={"y-MM-dd"}
+                                    onChange={e=>handleSelectDateRange(e)} value={dateRange} />
+                            </div>
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridState">
