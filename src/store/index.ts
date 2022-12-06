@@ -12,8 +12,14 @@ type ActionType = {
     total_absences: 0
 }
 
-const reducerFunction = (state = {}, action: ActionType)=>{
-    if (action.type === ACTION_TYPE.FETCH_ABSENCES_DONE){
+const reducerFunction = (state = commonState, action: ActionType)=>{
+    if (action.type === ACTION_TYPE.GET_TOTAL_ABSENCES){
+        //response data in current page
+        return {
+            total_absences: state.total_absences
+        }
+    }
+    if (action.type === ACTION_TYPE.SET_TOTAL_ABSENCES){
         //response data in current page
         return {
             total_absences: action.total_absences

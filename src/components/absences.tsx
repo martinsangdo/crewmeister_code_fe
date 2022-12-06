@@ -9,6 +9,7 @@ import Button from 'react-bootstrap/Button';
 import Pagination from 'react-bootstrap/Pagination';
 import {useSelector, useDispatch} from 'react-redux';
 import {ACTION_TYPE, APIS} from '../constant';
+import TotalComponent from './total'
 
 //display list of absences
 function Absences() {
@@ -35,6 +36,10 @@ function Absences() {
                     setIsWaiting(false);
                     setAbsences(res['absences']);
                     setMembers(res['member_list']);
+                    dispatch({
+                        type: ACTION_TYPE.SET_TOTAL_ABSENCES,
+                        total_absences: 9
+                    });
                 })
                 .catch(error => {
                     console.log(error);
@@ -81,7 +86,7 @@ function Absences() {
     };
     //UI loaded
     useEffect(didUpdate, []);
-    //
+    //format HTML list
     useEffect(parseAbsenceList, [absences]);
     //render
         return <Container>
@@ -147,6 +152,7 @@ function Absences() {
                     <Pagination.Next/>
                     <Pagination.Last/>
                 </Pagination>
+                <div>Total items: <TotalComponent></TotalComponent></div>
             </Row>
         </Container>
 }
