@@ -6,10 +6,10 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Pagination from 'react-bootstrap/Pagination';
 import {useSelector, useDispatch} from 'react-redux';
-import {ACTION_TYPE, APIS} from '../constant';
+import {ACTION_TYPE, DEFAULT_PAGE_LEN, APIS} from '../constant';
 import TotalComponent from './total'
+import { Pagination } from './pagination';
 
 //display list of absences
 function Absences() {
@@ -19,6 +19,12 @@ function Absences() {
     const[members, setMembers] = useState<any[]>([]);
     const[totalAbsences, setTotalAbsences] = useState(0);
     const[displayingData, setDisplayingData] = useState<any[]>([]);
+    //pagination
+    const [page, setPage] = useState(1);    //based 1-index
+    const totalPages = Math.ceil(totalAbsences / DEFAULT_PAGE_LEN);
+    const handlePages = (updatePage: number) => {
+        setPage(updatePage);
+    };
 
     const dispatch = useDispatch(); //link with redux
     //
@@ -29,20 +35,21 @@ function Absences() {
             if (!apiAddress) {
                 throw 'todo here';
             }
-            fetch(apiAddress + APIS.GET_ABSENCES)
+            fetch(apiAddress + APIS.GET_ABSENCES + '?page_limit='+DEFAULT_PAGE_LEN+'&page_index='+(page-1))
                 .then(res => res.json())
                 .then(res => {
-                    console.log(res);
+                    // console.log('BE response', res);
                     setIsWaiting(false);
                     setAbsences(res['absences']);
                     setMembers(res['member_list']);
                     dispatch({
                         type: ACTION_TYPE.SET_TOTAL_ABSENCES,
-                        total_absences: 9
+                        total_absences: res['total']
                     });
+                    setTotalAbsences(res['total']);
                 })
                 .catch(error => {
-                    console.log(error);
+                    // console.log(error);
                     setIsWaiting(false);
                 });
         }
@@ -82,16 +89,17 @@ function Absences() {
 
     function didUpdate() {
         document.title = 'List of absences';
-        fetchAbsences();
     };
     //UI loaded
     useEffect(didUpdate, []);
     //format HTML list
     useEffect(parseAbsenceList, [absences]);
+    //handle changing in pagination
+    useEffect(fetchAbsences, [page]);
     //render
         return <Container>
             {/*form to search*/}
-            <Row className="m-10">
+            <Row className="m-10 mt-5">
                 <Form className="m-2">
                     <Row className="mb-2">
                         <Form.Group as={Col} controlId="formGridCity">
@@ -135,24 +143,12 @@ function Absences() {
             </Row>
             {/*pagination*/}
             <Row>
-                <Pagination className="m-2">
-                    <Pagination.First/>
-                    <Pagination.Prev/>
-                    <Pagination.Item>{1}</Pagination.Item>
-                    <Pagination.Ellipsis/>
-
-                    <Pagination.Item>{10}</Pagination.Item>
-                    <Pagination.Item>{11}</Pagination.Item>
-                    <Pagination.Item active>{12}</Pagination.Item>
-                    <Pagination.Item>{13}</Pagination.Item>
-                    <Pagination.Item disabled>{14}</Pagination.Item>
-
-                    <Pagination.Ellipsis/>
-                    <Pagination.Item>{20}</Pagination.Item>
-                    <Pagination.Next/>
-                    <Pagination.Last/>
-                </Pagination>
-                <div>Total items: <TotalComponent></TotalComponent></div>
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    handlePagination={handlePages}
+                />
+                <div className="mb-5">Total items: <TotalComponent></TotalComponent></div>
             </Row>
         </Container>
 }
