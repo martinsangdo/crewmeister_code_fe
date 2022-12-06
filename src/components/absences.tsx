@@ -13,6 +13,11 @@ import { Pagination } from './pagination';
 
 //display list of absences
 function Absences() {
+    //inline CSS here
+    const statusStyle : any = {
+        'Confirmed': {color:'blue'},
+        'Rejected': {color:'red'}
+    };
     //default states
     const[isWaiting, setIsWaiting] = useState(false);
     const[absences, setAbsences] = useState<any[]>([]);
@@ -25,7 +30,9 @@ function Absences() {
     const handlePages = (updatePage: number) => {
         setPage(updatePage);
     };
-
+    //
+    const [selectingType, setSelectingType] = useState('');
+    //
     const dispatch = useDispatch(); //link with redux
     //
     function fetchAbsences(){
@@ -35,7 +42,11 @@ function Absences() {
             if (!apiAddress) {
                 throw 'todo here';
             }
-            fetch(apiAddress + APIS.GET_ABSENCES + '?page_limit='+DEFAULT_PAGE_LEN+'&page_index='+(page-1))
+            var uri = apiAddress + APIS.GET_ABSENCES + '?page_limit='+DEFAULT_PAGE_LEN+'&page_index='+(page-1);
+            if (selectingType != null && selectingType != ''){
+                uri += '&type=' + selectingType;
+            }
+            fetch(uri)
                 .then(res => res.json())
                 .then(res => {
                     // console.log('BE response', res);
@@ -80,7 +91,7 @@ function Absences() {
                 <td>{item.type}</td>
                 <td>{item.startDate} -&gt; {item.endDate}</td>
                 <td>{item.memberNote}</td>
-                <td className={item.status}>{item.status}</td>
+                <td style={statusStyle[item.status]}>{item.status}</td>
                 <td>{item.admitterNote}</td>
             </tr>;
         });
@@ -95,7 +106,15 @@ function Absences() {
     //format HTML list
     useEffect(parseAbsenceList, [absences]);
     //handle changing in pagination
-    useEffect(fetchAbsences, [page]);
+    useEffect(fetchAbsences, [page, selectingType]);
+    //when user choose Type
+    function onSelectType(newType: string){
+        setSelectingType(newType);
+    }
+    //when user click Search
+    function handleClickSearch(){
+
+    }
     //render
         return <Container>
             {/*form to search*/}
@@ -103,21 +122,29 @@ function Absences() {
                 <Form className="m-2">
                     <Row className="mb-2">
                         <Form.Group as={Col} controlId="formGridCity">
-                            <Form.Label>Member name</Form.Label>
+                            <Form.Label>Start date</Form.Label>
+                            <Form.Control/>
+                        </Form.Group>
+
+                        <Form.Group as={Col} controlId="formGridCity">
+                            <Form.Label>End date</Form.Label>
                             <Form.Control/>
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridState">
                             <Form.Label>Type</Form.Label>
-                            <Form.Select defaultValue="Choose...">
-                                <option>Choose one</option>
-                                <option>...</option>
+                            <Form.Select value={selectingType} onChange={e=>{
+                                onSelectType(e.target.value);
+                            }}>
+                                <option value="">Choose one</option>
+                                <option value="vacation">vacation</option>
+                                <option value="sickness">sickness</option>
                             </Form.Select>
                         </Form.Group>
                     </Row>
 
-                    <Button variant="primary" type="button">
-                        Search
+                    <Button variant="primary" type="button" onClick={handleClickSearch}>
+                        Search by date
                     </Button>
                 </Form>
                 <div>{isWaiting?'Querying data, please wait...':''}</div>
@@ -143,12 +170,13 @@ function Absences() {
             </Row>
             {/*pagination*/}
             <Row>
+                {totalPages > 1 &&
                 <Pagination
                     page={page}
                     totalPages={totalPages}
                     handlePagination={handlePages}
-                />
-                <div className="mb-5">Total items: <TotalComponent></TotalComponent></div>
+                />}
+                <div className="mt-5 mb-5">Total items (Redux, Styled component here): <TotalComponent></TotalComponent></div>
             </Row>
         </Container>
 }
