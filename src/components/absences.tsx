@@ -132,6 +132,7 @@ function Absences() {
     useEffect(fetchAbsences, [page, selectingType]);
     //when user choose Type
     function onSelectType(newType: string){
+        setPage(1);
         setSelectingType(newType);
     }
     //when user click Search
@@ -144,6 +145,7 @@ function Absences() {
     }
     //when user click Search
     function handleClickSearch(){
+        setPage(1);
         fetchAbsences();
     }
     //illustrate server unavailable
