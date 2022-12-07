@@ -21,6 +21,8 @@ function Absences() {
     };
     //default states
     const[isWaiting, setIsWaiting] = useState(false);
+    const[serverMessageError, setServerMessageError] = useState('');
+
     const[absences, setAbsences] = useState<any[]>([]);
     const[members, setMembers] = useState<any[]>([]);
     const[totalAbsences, setTotalAbsences] = useState(0);
@@ -70,10 +72,19 @@ function Absences() {
                         total_absences: res['total']
                     });
                     setTotalAbsences(res['total']);
+                    setServerMessageError('');
                 })
                 .catch(error => {
                     // console.log(error);
                     setIsWaiting(false);
+                    setAbsences([]);
+                    setMembers([]);
+                    dispatch({
+                        type: ACTION_TYPE.SET_TOTAL_ABSENCES,
+                        total_absences: 0
+                    });
+                    setTotalAbsences(0);
+                    setServerMessageError('Failed to connect to server!');
                 });
         }
     };
@@ -135,6 +146,31 @@ function Absences() {
     function handleClickSearch(){
         fetchAbsences();
     }
+    //illustrate server unavailable
+    function handleClickConnectFakeServer(){
+        if (!isWaiting) {
+            setIsWaiting(true);
+            fetch("http://localhost:2232")
+                .then(res => res.json())
+                .then(res => {
+                    console.log('BE response', res);
+                    setIsWaiting(false);
+                    setServerMessageError('');
+                })
+                .catch(error => {
+                    console.log(error);
+                    setIsWaiting(false);
+                    setAbsences([]);
+                    setMembers([]);
+                    dispatch({
+                        type: ACTION_TYPE.SET_TOTAL_ABSENCES,
+                        total_absences: 0
+                    });
+                    setTotalAbsences(0);
+                    setServerMessageError('Failed to connect to server!');
+                });
+        }
+    }
     //render
         return <Container>
             {/*form to search*/}
@@ -142,7 +178,7 @@ function Absences() {
                 <Form className="m-2">
                     <Row className="mb-2">
                         <Form.Group as={Col} controlId="formGridCity">
-                            <Form.Label>Date range (start date of Absence): </Form.Label>
+                            <Form.Label>Date range (who absence in this range): </Form.Label>
                             <div>
                                 <DateRangePicker
                                     format={"y-MM-dd"}
@@ -155,7 +191,7 @@ function Absences() {
                             <Form.Select value={selectingType} onChange={e=>{
                                 onSelectType(e.target.value);
                             }}>
-                                <option value="">Choose one</option>
+                                <option value="">Select all</option>
                                 <option value="vacation">vacation</option>
                                 <option value="sickness">sickness</option>
                             </Form.Select>
@@ -165,9 +201,15 @@ function Absences() {
                     <Button variant="primary" type="button" onClick={handleClickSearch}>
                         Search by date
                     </Button>
+                    <div className="mt-2">
+                        <Button variant="danger" type="button" onClick={handleClickConnectFakeServer}>
+                            Get data from dummy server
+                        </Button>
+                    </div>
                 </Form>
-                <div>{isWaiting?'Querying data, please wait...':''}</div>
+                <div>{isWaiting?'Querying data, please wait...':''} {serverMessageError?serverMessageError:''}</div>
             </Row>
+
             {/*data list to display*/}
             <Row>
                 <Table striped bordered hover className="m-2">
