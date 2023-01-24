@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+            name="description"
+            content="Practising translation of English"
+    />
+    <meta name="author" content="Martin SangDo">
+    <title>Translate English</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+    <script src="./translate.js"></script>
+    <style lang="css">
+        textarea {
+            resize: none;
+        }
+        .hidden {
+            display: none;
+        }
+        textarea.org {
+            background: beige;
+        }
+    </style>
+</head>
+<body>
+    <div>Copy content here</div>
+    <textarea id="txt_content" cols="150" rows="20" r></textarea>
+    <input type="button" onclick="parse_content();" value="Parse"/>
+    <div></div>
+    <table id="tbl_parse" width="100%" border="1">
+        <thead>
+            <td width="50%">Vietnamese</td>
+            <td>English</td>
+        </thead>
+        <tr class="hidden" id="tr_template">
+            <td><textarea class="org" rows="3" cols="75"></textarea></td>
+            <td><textarea rows="3" cols="75"></textarea></td>
+        </tr>
+    </table>
+</body>
+</html>
